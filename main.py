@@ -4,6 +4,8 @@ import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from models import Note
+
 DATA_FILENAME = "notes-data.json"
 
 app = FastAPI()
@@ -40,13 +42,13 @@ async def get_notes():
         return note_data
     
 @app.post("/notes")
-async def add_notes(new_note: dict):
+async def add_notes(new_note: Note):
     current_note_data = []
     if os.path.isfile(DATA_FILENAME):
         with open(DATA_FILENAME, "r") as note_data_file:
             current_note_data = json.load(note_data_file)
     
-    current_note_data.append(new_note)
+    current_note_data.append(new_note.model_dump())
     
     with open(DATA_FILENAME, "w") as write_file:
         json.dump(current_note_data, write_file)
