@@ -29,12 +29,7 @@ sample_data = {
     "content": "Programming is fun!",
 }
 
-@app.get("/")
-async def read_root():
-    return sample_data
-
-@app.get("/notes", response_model=List[Note])
-async def get_notes():
+def load_notes_data():
     if not os.path.isfile(DATA_FILENAME):
         print("No data found!")
         return []
@@ -42,18 +37,36 @@ async def get_notes():
     with open(DATA_FILENAME, "r") as note_data_file:
         note_data = json.load(note_data_file)
         return note_data
+
+@app.get("/")
+async def read_root():
+    return sample_data
+
+@app.get("/notes", response_model=List[Note])
+async def get_notes():
+    return load_notes_data()
     
-@app.post("/notes", response_model=List[Note])
+@app.post("/notes", response_model=List[Note], status_code=201)
 async def add_notes(new_note: Note):
-    current_note_data = []
-    if os.path.isfile(DATA_FILENAME):
-        with open(DATA_FILENAME, "r") as note_data_file:
-            current_note_data = json.load(note_data_file)
     
+    current_note_data = load_notes_data()
     current_note_data.append(new_note.model_dump())
     
     with open(DATA_FILENAME, "w") as write_file:
         json.dump(current_note_data, write_file)
     
     return current_note_data
+
+
+@app.delete("/notes/{index}", status_code=204)
+async def delete_note(index: int):
+    current_note_data = load_notes_data()    
+    current_note_data.pop(index)
+    
+    with open(DATA_FILENAME, "w") as write_file:
+        json.dump(current_note_data, write_file)
+    
+    
+    
+    
     
