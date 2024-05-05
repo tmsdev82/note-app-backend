@@ -68,5 +68,12 @@ async def delete_note(index: int):
     
     
     
+@app.put("/notes/{index}", response_model=List[Note])
+async def update_note(index: int, updated_note: Note):
+    current_note_data = load_notes_data()
+    current_note_data[index] = updated_note.model_dump() 
     
+    with open(DATA_FILENAME, "w") as write_file:
+        json.dump(current_note_data, write_file)
     
+    return current_note_data
